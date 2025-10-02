@@ -140,30 +140,52 @@ public class PlayerPacketRewriter1_9 extends RewriterBase<Protocol1_9To1_8> {
                     double z = wrapper.get(Types.DOUBLE, 2);
                     float yaw = wrapper.get(Types.FLOAT, 0);
                     float pitch = wrapper.get(Types.FLOAT, 1);
-
-                    wrapper.set(Types.BYTE, 0, (byte) 0);
+                    
+                    boolean shouldResetFlags = false;
 
                     if (flags != 0) {
                         if ((flags & 0x01) != 0) {
-                            x += pos.getPosX();
-                            wrapper.set(Types.DOUBLE, 0, x);
+                            if (x > 0.1) {
+                                shouldResetFlags = true;
+                                x += pos.getPosX();
+                                wrapper.set(Types.DOUBLE, 0, x);
+                            } else {
+                                wrapper.set(Types.DOUBLE, 0, x);
+                                x += pos.getPosX();
+                            }
                         }
                         if ((flags & 0x02) != 0) {
-                            y += pos.getPosY();
-                            wrapper.set(Types.DOUBLE, 1, y);
+                            if (y > 0.1) {
+                                shouldResetFlags = true;
+                                y += pos.getPosY();
+                                wrapper.set(Types.DOUBLE, 0, y);
+                            } else {
+                                wrapper.set(Types.DOUBLE, 0, y);
+                                y += pos.getPosY();
+                            }
                         }
                         if ((flags & 0x04) != 0) {
-                            z += pos.getPosZ();
-                            wrapper.set(Types.DOUBLE, 2, z);
+                            if (z > 0.1) {
+                                shouldResetFlags = true;
+                                z += pos.getPosZ();
+                                wrapper.set(Types.DOUBLE, 0, z);
+                            } else {
+                                wrapper.set(Types.DOUBLE, 0, z);
+                                z += pos.getPosZ();
+                            }
                         }
                         if ((flags & 0x08) != 0) {
-                            yaw += pos.getYaw();
                             wrapper.set(Types.FLOAT, 0, yaw);
+                            yaw += pos.getYaw();
                         }
                         if ((flags & 0x10) != 0) {
-                            pitch += pos.getPitch();
                             wrapper.set(Types.FLOAT, 1, pitch);
+                            pitch += pos.getPitch();
                         }
+                    }
+                    
+                    if (shouldResetFlags) {
+                        wrapper.set(Types.BYTE, 0, (byte) 0);
                     }
 
                     pos.setPos(x, y, z);
